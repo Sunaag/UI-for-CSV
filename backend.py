@@ -32,12 +32,11 @@ for file in files:
         csv_data= csv.reader(fh)
         names_list = next(csv_data)
         break
-
 table_name = 'Field'
 csv_list=[]
-cols= 'csv_id,'+','.join(names_list)
+cols= ','.join(names_list)
 new_cols= cols.split(',')
-placeholders='?,'+','.join(['?']*len(names_list))
+placeholders=','.join(['?']*len(names_list))
 insert_query=''' INSERT INTO Field (%s) VALUES (%s) '''%(cols,placeholders)
 print(''.join(tuple(cols)))
 for file in files:
@@ -64,8 +63,7 @@ for file in files:
              #for v,k in zip(itertools.repeat(csv_id,len(list(csv_data))),csv_data):
             #     print(v,k)
 
-             for row in csv_data:
-                 cur.execute(insert_query,new)
+             cur.executemany(insert_query,csv_data)
 
 #print(csv_list)
 
