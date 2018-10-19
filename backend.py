@@ -2,7 +2,6 @@
 import csv
 import sqlite3
 import os
-import itertools
 
 # Database Connection Info
 conn = sqlite3.connect('csv_db.sqlite')
@@ -18,9 +17,6 @@ CREATE TABLE Csv(
     filename    TEXT UNIQUE
 );
 ''')
-
-
-
 # Assign path to  files
 
 folder = 'TWEETS_CSV'
@@ -33,12 +29,9 @@ for file in files:
         names_list = next(csv_data)
         break
 table_name = 'Field'
-csv_list=[]
-cols= ','.join(names_list)
-new_cols= cols.split(',')
-placeholders=','.join(['?']*len(names_list))
-insert_query=''' INSERT INTO Field (%s) VALUES (%s) '''%(cols,placeholders)
-print(''.join(tuple(cols)))
+
+insert_query='''UPDATE Field JOIN Csv ON Field.csv_id= csv.id SET {} WHERE Csv.filename= ?'''.format(', '.join('Field.{}=?'.format(name) for name in names_list))
+print(insert_query)
 for file in files:
          if file.endswith('.csv'):
              #print(file)
@@ -47,29 +40,15 @@ for file in files:
              csv_id = cur.fetchone()[0]
              print(csv_id)
              cur.execute("""CREATE TABLE IF NOT EXISTS """ + table_name + " (id  INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,csv_id INTEGER," + " TEXT,".join(names_list) + " TEXT)")
-             csv_list.append(csv_id)
-
              csv_files = os.path.join(folder, file)
              fh= open(csv_files,'r')
              csv_data = csv.reader(fh)
-             names=next(csv_data) #throw away first
-             #print(tuple(csv_data))
-             new=''.join(tuple(cols))
-             print(new)
-
-            # csv_full = zip(itertools.repeat(csv_id,len(list(csv_data)),csv_data))
-             #print(csv_full)
-             #print(tuple(new_cols))
-             #for v,k in zip(itertools.repeat(csv_id,len(list(csv_data))),csv_data):
-            #     print(v,k)
-
-             cur.executemany(insert_query,csv_data)
-
-#print(csv_list)
-
-
-
-
+             names=next(csv_data) #throw away firs
+             print(csv_id)
+             print(file)
+             for row in csv_data:
+                 cur.execute('INSERT INTO Field(csv_id) VALUES(?)',(csv_id,) )
+             cur.executemany(insert_query,(csv_data,file))
 cur.close()
 
 conn.commit()
