@@ -30,8 +30,9 @@ for file in files:
         break
 table_name = 'Field'
 
-insert_query='''UPDATE Field JOIN Csv ON Field.csv_id= csv.id SET {} WHERE Csv.filename= ?'''.format(', '.join('Field.{}=?'.format(name) for name in names_list))
-print(insert_query)
+#insert_query='''UPDATE Field SET (%s) ON Field.csv_id= Csv.id  WHERE Csv.filename= ?'''%(', '.join('{}=%s'.format(name) for name in names_list))
+#insert_query='''UPDATE Field SET %s WHERE (SELECT id FROM Csv WHERE filename = ? )=csv_id '''%(', '.join('{}=?'.format(name) for name in names_list)),(file,)'''UPDATE Field SET %s WHERE (SELECT id FROM Csv WHERE filename = ? )=csv_id '''%(', '.join('{}=?'.format(name) for name in names_list))
+#print(insert_query)
 for file in files:
          if file.endswith('.csv'):
              #print(file)
@@ -46,9 +47,10 @@ for file in files:
              names=next(csv_data) #throw away firs
              print(csv_id)
              print(file)
+
              for row in csv_data:
                  cur.execute('INSERT INTO Field(csv_id) VALUES(?)',(csv_id,) )
-             cur.executemany(insert_query,(csv_data,file))
+             cur.executemany('''UPDATE Field SET %s WHERE csv_id IN (SELECT id FROM Csv WHERE filename = 'tweets.csv' ) '''%(', '.join('{}=?'.format(name) for name in names_list)),csv_data)
 cur.close()
 
 conn.commit()
