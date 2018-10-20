@@ -50,7 +50,7 @@ for file in files:
 
              for row in csv_data:
                  cur.execute('INSERT INTO Field(csv_id) VALUES(?)',(csv_id,) )
-             cur.executemany('''UPDATE Field SET %s WHERE csv_id IN (SELECT id FROM Csv WHERE filename = 'tweets.csv' ) '''%(', '.join('{}=?'.format(name) for name in names_list)),csv_data)
+             cur.executemany('''UPDATE Field SET %s WHERE csv_id IN (SELECT id FROM Csv WHERE filename =? ) '''%(', '.join('{}=?'.format(name) for name in names_list)),csv_data)
 cur.close()
 
 conn.commit()
